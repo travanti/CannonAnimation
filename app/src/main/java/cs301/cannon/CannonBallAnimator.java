@@ -16,7 +16,7 @@ public class CannonBallAnimator implements Animator {
     public float xPos = 0;
     public float yPos = 0;
     private double angle = 0;
-    private int velocity
+    private int velocity = 1;
 
 
     @Override
@@ -42,6 +42,8 @@ public class CannonBallAnimator implements Animator {
     @Override
     public void tick(Canvas canvas) {
         if(toShoot) {
+            count++;
+
             Paint paint = new Paint();
             paint.setColor(Color.GRAY);
             canvas.drawCircle(250, 1150, 20, paint);
@@ -54,6 +56,7 @@ public class CannonBallAnimator implements Animator {
     @Override
     public void onTouch(MotionEvent event) {
         toShoot = true;
+        count = 0;
         float xPress = event.getX();
         float yPress = event.getY();
         xPos =  xPress;
