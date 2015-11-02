@@ -17,11 +17,17 @@ import static java.lang.Math.*;
  * Created by travanti16 on 11/1/2015.
  */
 public class CannonAnimator implements Animator{
-    public int xPos = 300;
-    public int yPos = 120;
+    public float xPos = 0;
+    public float yPos = 0;
     public final int width = 400;
     public boolean destroyed = false;
-    private int angle = 0;
+    public boolean hasClicked = false;
+    private double angle = 0;
+    public int littleX1 = 0;
+    public int littleY1 = 0;
+    public int littleX2 = 0;
+    public int littleY2 = 0;
+
 
     @Override
     public int interval() {
@@ -56,8 +62,11 @@ public class CannonAnimator implements Animator{
         blackPaint.setStrokeWidth(3);
         Rect r = new Rect(200, 1100, 300, 1200);
         //r.offsetTo(xPos, yPos);
-        r.set((int) (250+70.71*cos(angle+3.14)),(int) (1150+70.71*sin(angle+3.14)),(int) (250+70.71*cos(angle)), (int) (1150+70.71*sin(angle)));
 
+        if(hasClicked) {
+
+            r.set(250 + littleX1, 1150 + littleY1, 250 + littleX2, 1150 + littleY2);
+        }
         canvas.drawRect(r, blackPaint);
 
 
@@ -66,12 +75,26 @@ public class CannonAnimator implements Animator{
     @Override
     public void onTouch(MotionEvent event) {
         if(event.getAction() == MotionEvent.ACTION_DOWN) {
+            hasClicked = true;
             float xPress = event.getX();
             float yPress = event.getY();
-            xPos = (int) xPress;
-            yPos = (int) yPress;
-            angle = (int) atan((xPos - 250) / (yPos - 1150));
-
+            xPos =  xPress;
+            yPos =  yPress;
+            double dX = xPos - 250;
+            double dY = abs(yPos - 1150); //might need absolute value because of coordinate system
+            angle = atan(dY / dX);
+            if (xPos >= 250) {
+                littleX1 = (int) (71 * cos(angle+3.14));
+                littleY1 = (int) (71 * sin(angle+3.14));
+                littleX2 = (int) (71 * cos(angle));
+                littleY2 = (int) (71 * sin(angle));
+            }
+            else{
+                littleX1 = (int) (-71 * cos(angle+3.14));
+                littleY1 = (int) (-71 * sin(angle+3.14));
+                littleX2 = (int) (-71 * cos(angle));
+                littleY2 = (int) (-71 * sin(angle));
+            }
 
 
 

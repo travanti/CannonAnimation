@@ -7,7 +7,7 @@ import android.view.MotionEvent;
  * Created by travanti16 on 11/1/2015.
  */
 public class CannonBallAnimator implements Animator {
-    private int count =
+    private int count = 0;
 
     @Override
     public int interval() {
