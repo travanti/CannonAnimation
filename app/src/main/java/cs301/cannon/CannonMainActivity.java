@@ -28,8 +28,7 @@ public class CannonMainActivity extends Activity {
 		// Create an animation canvas and place it in the main layout
 		Animator testAnim = new CannonAnimator();
 		AnimationCanvas myCanvas = new AnimationCanvas(this, testAnim);
-		LinearLayout mainLayout = (LinearLayout) this
-				.findViewById(R.id.topLevelLayout);
+		LinearLayout mainLayout = (LinearLayout) this.findViewById(R.id.topLevelLayout);
 		mainLayout.addView(myCanvas);
 
 	}

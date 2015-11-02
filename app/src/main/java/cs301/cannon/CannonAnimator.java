@@ -4,10 +4,11 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Rect;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 import static java.lang.Math.*;
 
@@ -22,15 +23,15 @@ public class CannonAnimator implements Animator{
     public float yPos = 0;
     public final int X_CANNON = 250;
     public final int Y_CANNON = 1150;
-//    public final int width = 400;
+    //    public final int width = 400;
     public boolean destroyed = false;
-//    public boolean hasClicked = false;
+    //    public boolean hasClicked = false;
     private double angle = 0;
     public float xBall = 250;
     public float yBall = 1150;
     boolean toShoot = false;
     private int velocity = 90;
-    public final int GRAVITY = -1;
+    public double gravity = -1;
     private int count = 0;
     private int countTarget = 0;
     public float xTarg1 = 500;
@@ -45,6 +46,13 @@ public class CannonAnimator implements Animator{
 
     private double yVelocity = 0;
     private double xVelocity = 0;
+//    Context context;
+//    public CannonAnimator(CannonMainActivity activity)
+//    {
+//        context = activity;
+//
+//    }
+
 //    public int littleX1 = 0;
 //    public int littleY1 = 0;
 //    public int littleX2 = 0;
@@ -80,8 +88,6 @@ public class CannonAnimator implements Animator{
         //incrament Target counter
         //counters are seperated because cannon is used to switch canon pos.
         countTarget++;
-
-        //define canon paint color
         final float textSize = 36f;
         Paint blackPaint = new Paint();
         blackPaint.setColor(Color.BLACK);
@@ -90,23 +96,31 @@ public class CannonAnimator implements Animator{
         //define canonballPainColor
         Paint paint = new Paint();
         paint.setColor(Color.DKGRAY);
-        //after checking that the screen has been touched at all shoot the cannon
-        //by spawning a canonball
-        if(toShoot && !isCanonDestroyed) {
-            count++;
-
-            yVelocity = velocity*sin(angle) - GRAVITY*count;
-            xVelocity = velocity*cos(angle);
-            xBall = (float) (X_CANNON + xVelocity * count);
-            yBall = (float) (Y_CANNON + yVelocity * count - (0.5*GRAVITY*count*count));
-            canvas.drawCircle(xBall, yBall, 20, paint);
-        }
-        //define paint for targets
         Paint paintTarget = new Paint();
         paintTarget.setColor(Color.MAGENTA);
 
         Paint paintTarget2 = new Paint();
         paintTarget2.setColor(Color.WHITE);
+
+        canvas.drawText("Gravity: " + gravity * -9.8 , canvas.getWidth() - 215, canvas.getHeight() - 35, blackPaint);
+        canvas.drawText("Tap anywhere to shoot! Tap Cannon to change gravity.", canvas.getWidth() - 1100,
+                canvas.getHeight() - 35, blackPaint);
+
+        //define canon paint color
+        //after checking that the screen has been touched at all shoot the cannon
+        //by spawning a canonball
+        if(toShoot && !isCanonDestroyed) {
+            count++;
+
+            yVelocity = velocity*sin(angle) - gravity *count;
+            xVelocity = velocity*cos(angle);
+            xBall = (float) (X_CANNON + xVelocity * count);
+            yBall = (float) (Y_CANNON + yVelocity * count - (0.5* gravity *count*count));
+            canvas.drawCircle(xBall, yBall, 20, paint);
+
+        }
+        //define paint for targets
+
 
         //Draw the targets at their respective locations after cheking that they haven't been hit
         if(!isTarget1Destroyed)
@@ -164,13 +178,13 @@ public class CannonAnimator implements Animator{
             toShoot = false;
         }
 
-        Rect r = new Rect(X_CANNON - 50, Y_CANNON - 50, 400, 1200); //generate simple cannon
+        Rect rect = new Rect(X_CANNON - 50 , Y_CANNON - 50, 400, 1200); //generate simple cannon
 
         if(!isCanonDestroyed) {
             canvas.save(); //saves the current state of the canvas
             double degreesAngle = Math.toDegrees(angle); //convert angle for rotate
             canvas.rotate((float) degreesAngle, X_CANNON, Y_CANNON);
-            canvas.drawRect(r, blackPaint);
+            canvas.drawRect(rect, blackPaint);
             canvas.restore(); //restore the canvas so nothing is all messed up
         }
         else
@@ -183,34 +197,33 @@ public class CannonAnimator implements Animator{
     @Override
     public void onTouch(MotionEvent event) {
         if(event.getAction() == MotionEvent.ACTION_DOWN) {
-            toShoot = true;
-//          hasClicked = true;
-            count = 0;
+            int xOff = 500;
+            int yOff = 950;
             float xPress = event.getX();
             float yPress = event.getY();
-            xPos =  xPress;
-            yPos =  yPress;
-            double dX = xPos - X_CANNON;
-            double dY = yPos - Y_CANNON; //might need absolute value because of coordinate system
-            angle = atan(dY / dX);
-            if (xPos <= X_CANNON) {
-                angle = angle + 3.14;
-//                littleX1 = (int) (71 * cos(angle+3.14));
-//                littleY1 = (int) (71 * sin(angle+3.14));
-//                littleX2 = (int) (71 * cos(angle));
-//                littleY2 = (int) (71 * sin(angle));
+            if(xPress < xOff && yPress > yOff)
+            {
+                gravity = gravity - .25; //toggle gravity up if pressed
+                if(gravity < -3)
+                {
+                  gravity = -1; //reset gravity to default if made higher than 3, game is unplayable after 3.
+                }
+
             }
-//            else{
-//                littleX1 = (int) (-71 * cos(angle+3.14));
-//                littleY1 = (int) (-71 * sin(angle+3.14));
-//                littleX2 = (int) (-71 * cos(angle));
-//                littleY2 = (int) (-71 * sin(angle));
-//            }
-
-
+            else
+            {
+                toShoot = true;
+                count = 0;
+                xPos =  xPress;
+                yPos =  yPress;
+                double dX = xPos - X_CANNON;
+                double dY = yPos - Y_CANNON; //might need absolute value because of coordinate system
+                angle = atan(dY / dX);
+                if (xPos <= X_CANNON) {
+                    angle = angle + 3.14;
+                }
+            }
 
         }
-
-
     }
 }
