@@ -27,9 +27,19 @@ public class CannonAnimator implements Animator{
     public float xBall = 250;
     public float yBall = 1150;
     boolean toShoot = false;
-    private int velocity = 65;
+    private int velocity = 90;
     public final int GRAVITY = -1;
     private int count = 0;
+    private int countTarget = 0;
+    public float xTarg1 = 500;
+    public float yTarg1 = 600;
+    public float xTarg2 = 500;
+    public float yTarg2 = 350;
+    public float Targ1V = 30;
+    public float Targ2V = -30;
+    private boolean isTarget1Destroyed = false;
+    private boolean isTarget2Destroyed = false;
+    private boolean isCanonDestroyed = false;
 //    public int littleX1 = 0;
 //    public int littleY1 = 0;
 //    public int littleX2 = 0;
@@ -61,29 +71,102 @@ public class CannonAnimator implements Animator{
 
     @Override
     public void tick(Canvas canvas) {
+
+        //incrament Target counter
+        //counters are seperated because cannon is used to switch canon pos.
+        countTarget++;
+
+        //define canon paint color
+        final float textSize = 36f;
         Paint blackPaint = new Paint();
         blackPaint.setColor(Color.BLACK);
-        if(toShoot) {
+        blackPaint.setTextSize(textSize);
+
+        //define canonballPainColor
+        Paint paint = new Paint();
+        paint.setColor(Color.DKGRAY);
+        //after checking that the screen has been touched at all shoot the cannon
+        //by spawning a canonball
+        if(toShoot && !isCanonDestroyed) {
             count++;
 
             double yVelocity = velocity*sin(angle) - GRAVITY*count;
             double xVelocity = velocity*cos(angle);
             xBall = (float) (250 + xVelocity * count);
             yBall = (float) (1150 + yVelocity * count - (0.5*GRAVITY*count*count));
-            Paint paint = new Paint();
-            paint.setColor(Color.GRAY);
             canvas.drawCircle(xBall, yBall, 20, paint);
         }
+        //define paint for targets
+        Paint paintTarget = new Paint();
+        paintTarget.setColor(Color.MAGENTA);
 
-        //int xOff = canvas.getWidth()/4;
-        //int yOff = canvas.getHeight()-10;
-        //int topLeft = (int) ((sin(angle)*width)+(canvas.getWidth()/4));
-        //blackPaint.setStrokeWidth(3);
+        Paint paintTarget2 = new Paint();
+        paintTarget2.setColor(Color.WHITE);
+
+        //Draw the targets at their respective locations
+        if(!isTarget1Destroyed)
+        {
+            canvas.drawCircle(xTarg1, yTarg1, 50, paintTarget);
+            canvas.drawCircle(xTarg1, yTarg1, 30, paintTarget2);
+            canvas.drawCircle(xTarg1, yTarg1, 10, paintTarget);
+            xTarg1 = xTarg1 + Targ1V;
+        }
+        else
+        {
+            float text1X = xTarg1;
+            float text1Y = yTarg1;
+            canvas.drawText("Target 1 Destoryed", text1X, text1Y, blackPaint);
+//            xTarg1 = 0;
+//            yTarg1 = 0;
+        }
+
+        if(!isTarget2Destroyed)
+        {
+            canvas.drawCircle(xTarg2, yTarg2, 50, paintTarget);
+            canvas.drawCircle(xTarg2, yTarg2, 30, paintTarget2);
+            canvas.drawCircle(xTarg2, yTarg2, 10, paintTarget);
+            xTarg2 = xTarg2 + Targ2V;
+        }
+        else
+        {
+            float text2X = xTarg2;
+            float text2Y = yTarg2;
+            canvas.drawText("Target 2 Destoryed", text2X, text2Y, blackPaint);
+//            xTarg2 = 0;
+//            yTarg2 = 0;
+        }
+
+        //incrament the position of the target
+        if(xTarg1 <= 0 || xTarg1 >= canvas.getWidth())
+        {
+            Targ1V = Targ1V * -1;
+        }
+        if(xTarg2 <= 0 || xTarg2 >= canvas.getWidth())
+        {
+            Targ2V = Targ2V * -1;
+        }
+
+
+        if(!isTarget1Destroyed && xBall > xTarg1 - 50 && xBall < xTarg1 + 50 && yBall < yTarg1 +50 && yBall > yTarg1 - 50)
+        {
+            isTarget1Destroyed = true;
+            toShoot = false;
+        }
+        if(!isTarget2Destroyed && xBall > xTarg2 - 50 && xBall < xTarg2 + 50 && yBall < yTarg2 + 50 && yBall > yTarg2 - 50)
+        {
+            isTarget2Destroyed = true;
+            toShoot = false;
+        }
+//        if()
+//        {
+//
+//        }
+
         Rect r = new Rect(200, 1100, 400, 1200); //generate simple cannon
 
-            //r.set(250 - littleX1, 1150 - littleY1, 250 - littleX2, 1150 - littleY2);
-            canvas.save(); //saves the current state of the canvas
-            double degreesAngle = Math.toDegrees(angle); //convert angle for rotate
+        if(!isCanonDestroyed)
+        canvas.save(); //saves the current state of the canvas
+        double degreesAngle = Math.toDegrees(angle); //convert angle for rotate
         canvas.rotate((float) degreesAngle, 250, 1150);
         canvas.drawRect(r, blackPaint);
         canvas.restore(); //restore the canvas so nothing is all messed up
