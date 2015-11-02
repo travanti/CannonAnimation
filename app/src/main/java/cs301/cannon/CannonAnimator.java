@@ -20,6 +20,8 @@ import static java.lang.Math.*;
 public class CannonAnimator implements Animator{
     public float xPos = 0;
     public float yPos = 0;
+    public final int X_CANNON = 250;
+    public final int Y_CANNON = 1150;
 //    public final int width = 400;
     public boolean destroyed = false;
 //    public boolean hasClicked = false;
@@ -40,6 +42,9 @@ public class CannonAnimator implements Animator{
     private boolean isTarget1Destroyed = false;
     private boolean isTarget2Destroyed = false;
     private boolean isCanonDestroyed = false;
+
+    private double yVelocity = 0;
+    private double xVelocity = 0;
 //    public int littleX1 = 0;
 //    public int littleY1 = 0;
 //    public int littleX2 = 0;
@@ -90,10 +95,10 @@ public class CannonAnimator implements Animator{
         if(toShoot && !isCanonDestroyed) {
             count++;
 
-            double yVelocity = velocity*sin(angle) - GRAVITY*count;
-            double xVelocity = velocity*cos(angle);
-            xBall = (float) (250 + xVelocity * count);
-            yBall = (float) (1150 + yVelocity * count - (0.5*GRAVITY*count*count));
+            yVelocity = velocity*sin(angle) - GRAVITY*count;
+            xVelocity = velocity*cos(angle);
+            xBall = (float) (X_CANNON + xVelocity * count);
+            yBall = (float) (Y_CANNON + yVelocity * count - (0.5*GRAVITY*count*count));
             canvas.drawCircle(xBall, yBall, 20, paint);
         }
         //define paint for targets
@@ -103,37 +108,33 @@ public class CannonAnimator implements Animator{
         Paint paintTarget2 = new Paint();
         paintTarget2.setColor(Color.WHITE);
 
-        //Draw the targets at their respective locations
+        //Draw the targets at their respective locations after cheking that they haven't been hit
         if(!isTarget1Destroyed)
         {
-            canvas.drawCircle(xTarg1, yTarg1, 50, paintTarget);
+            canvas.drawCircle(xTarg1, yTarg1, 50, paintTarget); //layer circles to make target
             canvas.drawCircle(xTarg1, yTarg1, 30, paintTarget2);
             canvas.drawCircle(xTarg1, yTarg1, 10, paintTarget);
             xTarg1 = xTarg1 + Targ1V;
         }
         else
         {
-            float text1X = xTarg1;
+            float text1X = xTarg1; //save local version to protect target's value
             float text1Y = yTarg1;
-            canvas.drawText("Target 1 Destoryed", text1X, text1Y, blackPaint);
-//            xTarg1 = 0;
-//            yTarg1 = 0;
+            canvas.drawText("Target 1 Destoryed", text1X - 40, text1Y - 40, blackPaint); //make hit message
         }
 
         if(!isTarget2Destroyed)
         {
-            canvas.drawCircle(xTarg2, yTarg2, 50, paintTarget);
+            canvas.drawCircle(xTarg2, yTarg2, 50, paintTarget); //layer circles to make target
             canvas.drawCircle(xTarg2, yTarg2, 30, paintTarget2);
             canvas.drawCircle(xTarg2, yTarg2, 10, paintTarget);
             xTarg2 = xTarg2 + Targ2V;
         }
         else
         {
-            float text2X = xTarg2;
+            float text2X = xTarg2; //save local version to protect target's value
             float text2Y = yTarg2;
-            canvas.drawText("Target 2 Destoryed", text2X, text2Y, blackPaint);
-//            xTarg2 = 0;
-//            yTarg2 = 0;
+            canvas.drawText("Target 2 Destoryed", text2X - 40, text2Y - 40, blackPaint); //make hit message
         }
 
         //incrament the position of the target
@@ -157,19 +158,25 @@ public class CannonAnimator implements Animator{
             isTarget2Destroyed = true;
             toShoot = false;
         }
-//        if()
-//        {
-//
-//        }
+        if(!isCanonDestroyed && xBall > X_CANNON - 75 && xBall < X_CANNON + 75 && yBall < 1150 + 100 && yBall > 1150 - 100 && count > 20)
+        {
+            isCanonDestroyed = true;
+            toShoot = false;
+        }
 
-        Rect r = new Rect(200, 1100, 400, 1200); //generate simple cannon
+        Rect r = new Rect(X_CANNON - 50, Y_CANNON - 50, 400, 1200); //generate simple cannon
 
-        if(!isCanonDestroyed)
-        canvas.save(); //saves the current state of the canvas
-        double degreesAngle = Math.toDegrees(angle); //convert angle for rotate
-        canvas.rotate((float) degreesAngle, 250, 1150);
-        canvas.drawRect(r, blackPaint);
-        canvas.restore(); //restore the canvas so nothing is all messed up
+        if(!isCanonDestroyed) {
+            canvas.save(); //saves the current state of the canvas
+            double degreesAngle = Math.toDegrees(angle); //convert angle for rotate
+            canvas.rotate((float) degreesAngle, X_CANNON, Y_CANNON);
+            canvas.drawRect(r, blackPaint);
+            canvas.restore(); //restore the canvas so nothing is all messed up
+        }
+        else
+        {
+            canvas.drawText("Cannon Destoryed", X_CANNON - 100, Y_CANNON, blackPaint);
+        }
 
     }
 
@@ -183,10 +190,10 @@ public class CannonAnimator implements Animator{
             float yPress = event.getY();
             xPos =  xPress;
             yPos =  yPress;
-            double dX = xPos - 250;
-            double dY = yPos - 1150; //might need absolute value because of coordinate system
+            double dX = xPos - X_CANNON;
+            double dY = yPos - Y_CANNON; //might need absolute value because of coordinate system
             angle = atan(dY / dX);
-            if (xPos <= 250) {
+            if (xPos <= X_CANNON) {
                 angle = angle + 3.14;
 //                littleX1 = (int) (71 * cos(angle+3.14));
 //                littleY1 = (int) (71 * sin(angle+3.14));
