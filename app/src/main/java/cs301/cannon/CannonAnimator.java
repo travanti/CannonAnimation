@@ -13,51 +13,35 @@ import android.view.MotionEvent;
 import static java.lang.Math.*;
 
 /** This class defines the animation cannon which is movable upon
- *  user touch interaction and spawns a cannonball animation
+ *  user touch interaction and spawns a cannonball
  *  object when clicked
  *
  * Created by travanti16 on 11/1/2015.
  */
 public class CannonAnimator implements Animator{
-    public float xPos = 0;
+    public float xPos = 0; //for gen use
     public float yPos = 0;
-    public final int X_CANNON = 250;
+    public final int X_CANNON = 250; //where cannon is centered
     public final int Y_CANNON = 1150;
-    //    public final int width = 400;
     public boolean destroyed = false;
-    //    public boolean hasClicked = false;
-    private double angle = 0;
-    public float xBall = 250;
+    private double angle = 0; //instance to calculate trajectory angle
+    public float xBall = 250; //cannon ball position is saved here defaults to origin on cannon
     public float yBall = 1150;
-    boolean toShoot = false;
-    private int velocity = 90;
+    boolean toShoot = false; //so ball isn't generated until clicked
+    private final int velocity = 90; //default velocity never updated
     public double gravity = -1;
-    private int count = 0;
-    private int countTarget = 0;
-    public float xTarg1 = 500;
+    private int count = 0; //used to mimic time in the tick method
+    int countTarget = 0; //seperates the behavior of the targets from that of the cannon ball.
+
+    public float xTarg1 = 500; //point of origin for the target 1
     public float yTarg1 = 600;
-    public float xTarg2 = 500;
+    public float xTarg2 = 500; //point of origin for the target 2
     public float yTarg2 = 350;
-    public float Targ1V = 30;
+    public float Targ1V = 30; //values of the velocity for the targets, are reversed when edge of screen is met
     public float Targ2V = -30;
-    private boolean isTarget1Destroyed = false;
-    private boolean isTarget2Destroyed = false;
-    private boolean isCanonDestroyed = false;
-
-    private double yVelocity = 0;
-    private double xVelocity = 0;
-//    Context context;
-//    public CannonAnimator(CannonMainActivity activity)
-//    {
-//        context = activity;
-//
-//    }
-
-//    public int littleX1 = 0;
-//    public int littleY1 = 0;
-//    public int littleX2 = 0;
-//    public int littleY2 = 0;
-
+    private boolean isTarget1Destroyed = false; //switches off traget1 behavior if destroyed
+    private boolean isTarget2Destroyed = false; //switches off targert2 behavior if destroyed
+    private boolean isCanonDestroyed = false; //switches off cannon behavior if destroyed
 
     @Override
     public int interval() {
@@ -99,6 +83,7 @@ public class CannonAnimator implements Animator{
         Paint paintTarget = new Paint();
         paintTarget.setColor(Color.MAGENTA);
 
+        //define second color for target so it can look pretty
         Paint paintTarget2 = new Paint();
         paintTarget2.setColor(Color.WHITE);
 
@@ -112,6 +97,11 @@ public class CannonAnimator implements Animator{
         if(toShoot && !isCanonDestroyed) {
             count++;
 
+
+            double yVelocity = 0;
+            double xVelocity = 0;
+            //using newtonian physics equations for projectile motion change how the ball behaves
+            //use count as time and make sure that angle is radians, and degrees when appropriate.
             yVelocity = velocity*sin(angle) - gravity *count;
             xVelocity = velocity*cos(angle);
             xBall = (float) (X_CANNON + xVelocity * count);
@@ -151,7 +141,7 @@ public class CannonAnimator implements Animator{
             canvas.drawText("Target 2 Destoryed", text2X - 40, text2Y - 40, blackPaint); //make hit message
         }
 
-        //incrament the position of the target
+        //increment the position of the target
         if(xTarg1 <= 0 || xTarg1 >= canvas.getWidth())
         {
             Targ1V = Targ1V * -1;
@@ -161,17 +151,19 @@ public class CannonAnimator implements Animator{
             Targ2V = Targ2V * -1;
         }
 
-
+        //detect if target 1 has been hit by projectille
         if(!isTarget1Destroyed && xBall > xTarg1 - 50 && xBall < xTarg1 + 50 && yBall < yTarg1 +50 && yBall > yTarg1 - 50)
         {
             isTarget1Destroyed = true;
             toShoot = false;
         }
+        //detect if target 2 has been hit by projectille
         if(!isTarget2Destroyed && xBall > xTarg2 - 50 && xBall < xTarg2 + 50 && yBall < yTarg2 + 50 && yBall > yTarg2 - 50)
         {
             isTarget2Destroyed = true;
             toShoot = false;
         }
+        //detect if cannon is hit by projectile
         if(!isCanonDestroyed && xBall > X_CANNON - 75 && xBall < X_CANNON + 75 && yBall < 1150 + 100 && yBall > 1150 - 100 && count > 20)
         {
             isCanonDestroyed = true;
@@ -189,7 +181,7 @@ public class CannonAnimator implements Animator{
         }
         else
         {
-            canvas.drawText("Cannon Destoryed", X_CANNON - 100, Y_CANNON, blackPaint);
+            canvas.drawText("Cannon Destoryed", X_CANNON - 100, Y_CANNON, blackPaint); //display message in place of cannon when destoryed.
         }
 
     }
@@ -197,9 +189,9 @@ public class CannonAnimator implements Animator{
     @Override
     public void onTouch(MotionEvent event) {
         if(event.getAction() == MotionEvent.ACTION_DOWN) {
-            int xOff = 500;
-            int yOff = 950;
-            float xPress = event.getX();
+            int xOff = 500; //value to check if x is in firing range
+            int yOff = 950; //value to check if y is in firing range
+            float xPress = event.getX(); //get values from where tapped on screen
             float yPress = event.getY();
             if(xPress < xOff && yPress > yOff)
             {
@@ -216,10 +208,10 @@ public class CannonAnimator implements Animator{
                 count = 0;
                 xPos =  xPress;
                 yPos =  yPress;
-                double dX = xPos - X_CANNON;
-                double dY = yPos - Y_CANNON; //might need absolute value because of coordinate system
-                angle = atan(dY / dX);
-                if (xPos <= X_CANNON) {
+                double dX = xPos - X_CANNON; //find legs of triange formed from cannon to click point
+                double dY = yPos - Y_CANNON;
+                angle = atan(dY / dX); //calculate the angle
+                if (xPos <= X_CANNON) { //detecet if offset is needed for angle to be useful.
                     angle = angle + 3.14;
                 }
             }

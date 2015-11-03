@@ -18,7 +18,7 @@ import android.widget.LinearLayout;
 public class CannonMainActivity extends Activity {
 
 	/**
-	 * creates an AnimationCanvas containing a TestAnimator.
+	 * creates an AnimationCanvas containing a Cannon Animator.
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -26,8 +26,8 @@ public class CannonMainActivity extends Activity {
 		setContentView(R.layout.activity_cannon_main);
 
 		// Create an animation canvas and place it in the main layout
-		Animator testAnim = new CannonAnimator();
-		AnimationCanvas myCanvas = new AnimationCanvas(this, testAnim);
+		Animator cannonAnimator = new CannonAnimator();
+		AnimationCanvas myCanvas = new AnimationCanvas(this, cannonAnimator);
 		LinearLayout mainLayout = (LinearLayout) this.findViewById(R.id.topLevelLayout);
 		mainLayout.addView(myCanvas);
 
